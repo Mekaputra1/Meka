@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Absensi Audio IoT dengan Pendaftaran dan Nomor BP</title>
+<style>
+  /* Reset & base */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin:0; padding:0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-image:
+  linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+  url('logo_universitas_putra_indonesia_upi_yptk_padang.png');
+    color: #fff;
+    display:flex;
+    flex-direction: column;
+    min-height: 100vh;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  header {
+    padding: 1rem;
+    text-align: center;
+    background-color: rgba(0,0,0,0.2);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  header h1 {
+    margin:0;
+    font-weight: 700;
+    font-size: 1.6rem;
+    user-select:none;
+  }
+  main {
+    flex: 1 0 auto;
+    padding: 1rem;
+    overflow-y: auto;
+  }
+  .btn {
+    background: #fff;
+    color:#2575fc;
+    border:none;
+    padding: 0.75rem 1.25rem;
+    margin: 0.5rem 0;
+    font-weight: 700;
+    font-size: 1rem;
+    border-radius: 30px;
+    cursor: pointer;
+    user-select:none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+  .btn:hover:not(:disabled) {
+    background: #f0f0f0;
+  }
+  .btn:disabled {
+    background: #bbb;
+    color: #666;
+    cursor: not-allowed;
+  }
+  .status {
+    text-align: center;
+    font-size: 1.1rem;
+    margin: 1rem 0;
+    font-weight: 600;
+    min-height: 1.4rem;
+  }
+  /* Form Pendaftaran */
+  #registerForm {
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  #registerForm label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+  }
+  #registerForm input[type="text"] {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    margin-bottom: 0.8rem;
+  }
+  /* Daftar Absensi */
+  #absensiHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+    user-select:none;
+  }
+  #absensiHeader p {
+    margin: 0;
+    font-weight: 600;
+  }
+  #logoutBtn {
+    background: #ff4b5c;
+    color: white;
+    border-radius: 20px;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.3s ease;
+  }
+  #logoutBtn:hover {
+    background: #e03e4b;
+  }
+  .absensi-list {
+    margin-top: 1.5rem;
+  }
+  .absensi-list h2 {
+    user-select:none;
+  }
+  .absensi-item {
+    background: rgba(255,255,255,0.15);
+    margin-bottom: 1rem;
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
+    position: relative;
+  }
+  .absensi-item time {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    margin-bottom: 0.5rem;
+    user-select:none;
+  }
+  .absensi-item .user-info {
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    user-select:none;
+  }
+  audio {
+    outline: none;
+    width: 100%;
+    border-radius: 8px;
+    background: #f7f7f7;
+    cursor: pointer;
+  }
+  /* Tombol hapus kecil */
+  .delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    background: rgba(255, 0, 0, 0.85);
+    border: none;
+    color: white;
+    font-weight: 700;
+    font-size: 0.75rem;
+    border-radius: 12px;
+    padding: 2px 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    user-select:none;
+  }
+  .delete-btn:hover {
+    background: rgba(255, 0, 0, 1);
+  }
+  footer {
+    margin-top: auto;
+    background: rgba(0,0,0,0.15);
+    padding: 0.5rem;
+    text-align: center;
+    font-size: 0.8rem;
+    user-select:none;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Absensi Audio IoT</h1>
+</header>
+<main>
+  <section id="registerForm">
+    <label for="userNameInput">Nama Lengkap</label>
+    <input type="text" id="userNameInput" placeholder="Masukkan nama lengkap Anda" autocomplete="off" />
+    <label for="userBpInput">Nomor BP</label>
+    <input type="text" id="userBpInput" placeholder="Masukkan Nomor BP Anda" autocomplete="off" />
+    <button id="registerBtn" class="btn">Daftar</button>
+  </section>
+
+  <section id="absensiSection" style="display:none;">
+    <div id="absensiHeader">
+      <p>Pengguna terdaftar: <strong><span id="displayUserName"></span></strong> | BP: <strong><span id="displayUserBp"></span></strong></p>
+      <button id="logoutBtn">Logout</button>
+    </div>
+    <button id="startBtn" class="btn">Mulai Absen</button>
+    <button id="stopBtn" class="btn" disabled>Stop</button>
+    <div class="status" id="statusMsg">&nbsp;</div>
+
+    <section class="absensi-list" id="absensiList">
+      <h2>Rekaman Absensi</h2>
+      <div id="recordsContainer">
+        <!-- Daftar rekaman akan muncul di sini -->
+      </div>
+    </section>
+  </section>
+</main>
+<footer>
+</footer>
+
+<script>
+(() => {
+  const registerForm = document.getElementById('registerForm');
+  const userNameInput = document.getElementById('userNameInput');
+  const userBpInput = document.getElementById('userBpInput');
+  const registerBtn = document.getElementById('registerBtn');
+
+  const absensiSection = document.getElementById('absensiSection');
+  const displayUserName = document.getElementById('displayUserName');
+  const displayUserBp = document.getElementById('displayUserBp');
+
+  const startBtn = document.getElementById('startBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const statusMsg = document.getElementById('statusMsg');
+  const recordsContainer = document.getElementById('recordsContainer');
+
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  let mediaRecorder = null;
+  let chunks = [];
+  let recordingTimeout = null;
+  let currentUser = null;
+
+  // Inisialisasi aplikasi
+  function init() {
+    // Cek apakah user sudah terdaftar di localStorage
+    const savedUserStr = localStorage.getItem('absensiUser');
+    if(savedUserStr) {
+      try {
+        currentUser = JSON.parse(savedUserStr);
+        showAbsensiSection();
+        loadRecords();
+      } catch {
+        localStorage.removeItem('absensiUser');
+        showRegisterForm();
+      }
+    } else {
+      showRegisterForm();
+    }
+  }
+
+  // Tampilkan form pendaftaran user
+  function showRegisterForm(){
+    registerForm.style.display = 'block';
+    absensiSection.style.display = 'none';
+    userNameInput.value = '';
+    userBpInput.value = '';
+  }
+
+  // Tampilkan bagian absensi dan nama user
+  function showAbsensiSection(){
+    registerForm.style.display = 'none';
+    absensiSection.style.display = 'block';
+    displayUserName.textContent = currentUser.name;
+    displayUserBp.textContent = currentUser.bp;
+  }
+
+  // Simpan user ke localStorage
+  function saveUser(name, bp){
+    const userObj = { name, bp };
+    localStorage.setItem('absensiUser', JSON.stringify(userObj));
+    currentUser = userObj;
+  }
+
+  registerBtn.addEventListener('click', ()=>{
+    const name = userNameInput.value.trim();
+    const bp = userBpInput.value.trim();
+    if(name.length < 3){
+      alert('Nama harus diisi minimal 3 karakter.');
+      userNameInput.focus();
+      return;
+    }
+    if(bp.length === 0){
+      alert('Nomor BP harus diisi.');
+      userBpInput.focus();
+      return;
+    }
+    saveUser(name, bp);
+    showAbsensiSection();
+    loadRecords();
+  });
+
+  // Logout user
+  logoutBtn.addEventListener('click', () => {
+    if(confirm('Yakin ingin logout? Data absensi tetap tersimpan.')){
+      localStorage.removeItem('absensiUser');
+      currentUser = null;
+      showRegisterForm();
+      statusMsg.textContent = '';
+      chunks = [];
+      mediaRecorder = null;
+      recordingTimeout = null;
+    }
+  });
+
+  // Load rekaman dari localStorage dan render
+  function loadRecords() {
+    recordsContainer.innerHTML = '';
+    // Ambil semua rekaman yang cocok user ini berdasarkan nama dan bp
+    let records = JSON.parse(localStorage.getItem('absensiRecords') || '[]');
+    const userRecords = records.filter(r => r.user.name === currentUser.name && r.user.bp === currentUser.bp);
+    if(userRecords.length === 0){
+      recordsContainer.innerHTML = '<p style="opacity:0.8;">Belum ada absensi.</p>';
+      return;
+    }
+    userRecords.forEach(({timestamp, audioDataURI}, index) => {
+      let item = document.createElement('div');
+      item.className = 'absensi-item';
+
+      let timeElem = document.createElement('time');
+      let dateObj = new Date(timestamp);
+      timeElem.textContent = dateObj.toLocaleString('id-ID', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      });
+
+      let userInfoElem = document.createElement('div');
+      userInfoElem.className = 'user-info';
+
+      let audioElem = document.createElement('audio');
+      audioElem.controls = true;
+      audioElem.src = audioDataURI;
+
+      // Tombol hapus
+      let deleteBtn = document.createElement('button');
+      deleteBtn.className = 'delete-btn';
+      deleteBtn.textContent = 'Hapus';
+      deleteBtn.title = 'Hapus rekaman ini';
+      deleteBtn.onclick = () => {
+        if(confirm('Yakin ingin menghapus rekaman ini?')){
+          deleteRecord(index);
+        }
+      };
+
+      item.appendChild(userInfoElem);
+      item.appendChild(timeElem);
+      item.appendChild(audioElem);
+      item.appendChild(deleteBtn);
+
+      recordsContainer.appendChild(item);
+    });
+  }
+
+  // Hapus rekaman berdasarkan indeks user specific
+  function deleteRecord(idx) {
+    let records = JSON.parse(localStorage.getItem('absensiRecords') || '[]');
+    // Filter user current
+    let userRecords = records.filter(r => r.user.name === currentUser.name && r.user.bp === currentUser.bp);
+    if(idx >= 0 && idx < userRecords.length){
+      const recordToDelete = userRecords[idx];
+      // Cari index asli di records
+      const originalIndex = records.findIndex(r => r.timestamp === recordToDelete.timestamp 
+        && r.user.name === currentUser.name && r.user.bp === currentUser.bp);
+      if(originalIndex !== -1){
+        records.splice(originalIndex, 1);
+        localStorage.setItem('absensiRecords', JSON.stringify(records));
+        loadRecords();
+        statusMsg.textContent = 'Rekaman berhasil dihapus.';
+      }
+    }
+  }
+
+  // Simpan rekaman ke localStorage
+  function saveRecord(audioBlob) {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64data = reader.result;
+      let records = JSON.parse(localStorage.getItem('absensiRecords') || '[]');
+      records.unshift({
+        timestamp: Date.now(),
+        user: currentUser,
+        audioDataURI: base64data
+      });
+      // batasi max 50 rekaman untuk hemat penyimpanan
+      if(records.length > 50){
+        records = records.slice(0, 50);
+      }
+      localStorage.setItem('absensiRecords', JSON.stringify(records));
+      loadRecords();
+    };
+    reader.readAsDataURL(audioBlob);
+  }
+
+  // Mulai rekam audio
+  async function startRecording() {
+    if(!currentUser){
+      alert('Silakan daftar terlebih dahulu!');
+      return;
+    }
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      statusMsg.textContent = 'Browser tidak mendukung akses mikrofon.';
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      chunks = [];
+
+      mediaRecorder.ondataavailable = e => {
+        if(e.data.size > 0) {
+          chunks.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        saveRecord(blob);
+        statusMsg.textContent = 'Rekaman selesai dan tersimpan.';
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+      };
+
+      mediaRecorder.start();
+      statusMsg.textContent = 'Merekam... (hingga 5 detik)';
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+
+      // Berhenti otomatis setelah 5 detik
+      recordingTimeout = setTimeout(()=>{
+        if(mediaRecorder && mediaRecorder.state === 'recording'){
+          mediaRecorder.stop();
+        }
+      }, 5000);
+
+    } catch(err){
+      statusMsg.textContent = 'Izin mikrofon diperlukan! Atau terjadi kesalahan: ' + err.message;
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    }
+  }
+
+  // Stop rekaman manual
+  function stopRecording() {
+    if(mediaRecorder && mediaRecorder.state === 'recording'){
+      mediaRecorder.stop();
+      if(recordingTimeout){
+        clearTimeout(recordingTimeout);
+        recordingTimeout = null;
+      }
+      statusMsg.textContent = 'Menghentikan rekaman...';
+      stopBtn.disabled = true;
+    }
+  }
+
+  registerBtn.addEventListener('click', ()=>{
+    // reset status setiap daftar ulang
+    statusMsg.textContent = '';
+  });
+
+  startBtn.addEventListener('click', startRecording);
+  stopBtn.addEventListener('click', stopRecording);
+
+  logoutBtn.addEventListener('click', () => {
+    if(confirm('Yakin ingin logout? Data absensi tetap tersimpan.')){
+      localStorage.removeItem('absensiUser');
+      currentUser = null;
+      showRegisterForm();
+      statusMsg.textContent = '';
+      chunks = [];
+      mediaRecorder = null;
+      recordingTimeout = null;
+    }
+  });
+
+  window.addEventListener('load', init);
+})();
+</script>
+</body>
+</html>
